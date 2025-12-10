@@ -1,0 +1,13 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+@source '../../../../vendor/bezhansalleh/filament-panel-switch/resources/views/**/*.blade.php';
+
+.fi-topbar {
+    @apply !bg-inherit ring-0 shadow-none;
+}
+
+.fi-sidebar-header {
+    @apply !bg-inherit ring-0 shadow-none;
+}
