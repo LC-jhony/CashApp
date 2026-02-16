@@ -6,66 +6,64 @@ use Carbon\Carbon;
 
 trait TraitAleman
 {
-    public function PlanMensualAleman($rate, $amount, $year)
+    public function PlanMensualAleman($rate, $amount, $years)
     {
-        // calculo base
-        $CUOTAS = $year * 12;
-        $TASA_MENSUAL = $rate / 12;
+        $CUOTAS = $years * 12;
+        $TASA_MENSUAL = ($rate / 100) / 12;
         $PRESTAMO = $amount;
-        $AMORTIZACION_FIJA = $PRESTAMO / $CUOTAS;
+        $AMORTIZACION_FIJA = round($PRESTAMO / $CUOTAS, 2);
 
-        // variable dinamica / calculdas
         $InteresCalculado = 0;
-        $CapitalVivo = 0;
+        $CapitalVivo = $PRESTAMO;
         $CuotaPago = 0;
         $SumaIntereses = 0;
         $SumaCuotas = 0;
-        $sumaAmortizacionesPerido = 0;
+        $sumaAmortizaciones = 0;
         $tabla = collect();
+
         for ($i = 1; $i <= $CUOTAS; $i++) {
-            if ($i == 1) {
-                $CapitalVivo = $PRESTAMO;
-            } else {
-                $CapitalVivo = ($CapitalVivo - $AMORTIZACION_FIJA);
-            }
-            // interes del periodo
-            $InteresCalculado = ($TASA_MENSUAL * $CapitalVivo) / 100;
-            // cuota a pagar
-            $CuotaPago = $AMORTIZACION_FIJA + $InteresCalculado;
-            //suma de interes
+            $InteresCalculado = round($CapitalVivo * $TASA_MENSUAL, 2);
+            $CuotaPago = round($AMORTIZACION_FIJA + $InteresCalculado, 2);
             $SumaIntereses += $InteresCalculado;
-            // suma de cuotas
             $SumaCuotas += $CuotaPago;
-            // suma de la amortizacion de cada  periodo
-            $sumaAmortizacionesPerido += $AMORTIZACION_FIJA;
-            // fecha de pago del periodo
-            $payDate = Carbon::now()->addMonth($i == 1 ? 1 : $i + 1);
+            $sumaAmortizaciones += $AMORTIZACION_FIJA;
+
+            $pendiente = $CapitalVivo;
+            $CapitalVivo = round($CapitalVivo - $AMORTIZACION_FIJA, 2);
+
+            if ($i === (int) $CUOTAS) {
+                $pendiente = 0;
+            }
+
+            $payDate = Carbon::now()->addMonth($i);
+
             if ($i == 1) {
                 $tabla = collect([[
                     'FECHA' => $payDate->toDateString(),
-                    'CUOTA' => number_format($CuotaPago, 2),
-                    'AMORTIZACION' => number_format($AMORTIZACION_FIJA, 2),
-                    'INTERESES' => number_format($InteresCalculado, 2),
-                    'PENDIENTE' => number_format($CapitalVivo - $AMORTIZACION_FIJA, 2)
+                    'CUOTA' => $CuotaPago,
+                    'AMORTIZACION' => $AMORTIZACION_FIJA,
+                    'INTERESES' => $InteresCalculado,
+                    'PENDIENTE' => $pendiente,
                 ]]);
             } else {
-                $tabla->push([[
+                $tabla->push([
                     'FECHA' => $payDate->toDateString(),
-                    'CUOTA' => number_format($CuotaPago, 2),
-                    'AMORTIZACION' => number_format($AMORTIZACION_FIJA, 2),
-                    'INTERESES' => number_format($InteresCalculado, 2),
-                    'PENDIENTE' => number_format($CapitalVivo - $AMORTIZACION_FIJA, 2)
-                ]]);
-                // agregar los totales
-                $tabla->prepend([
-                    'RESUMEN' => '',
-                    'TOTAL PAGADO' => number_format($SumaCuotas, 2),
-                    'AMORTIZACION' => number_format($sumaAmortizacionesPerido, 2),
-                    'INTERESES' => number_format($SumaIntereses, 2),
-                    'PENDIENTE' => 0
+                    'CUOTA' => $CuotaPago,
+                    'AMORTIZACION' => $AMORTIZACION_FIJA,
+                    'INTERESES' => $InteresCalculado,
+                    'PENDIENTE' => $pendiente,
                 ]);
-                return $tabla;
             }
         }
+
+        $tabla->prepend([
+            'RESUMEN' => '',
+            'TOTAL PAGADO' => $SumaCuotas,
+            'AMORTIZACION' => $sumaAmortizaciones,
+            'INTERESES' => $SumaIntereses,
+            'PENDIENTE' => 0,
+        ]);
+
+        return $tabla;
     }
 }

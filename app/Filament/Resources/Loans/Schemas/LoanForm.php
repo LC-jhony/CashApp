@@ -2,28 +2,26 @@
 
 namespace App\Filament\Resources\Loans\Schemas;
 
+use App\Models\Frecuencie;
 use App\Models\Rate;
 use App\Models\User;
-use App\Models\Frecuencie;
 use App\Trait\TraitAleman;
-use App\Trait\TraitFrances;
-use Filament\Schemas\Schema;
 use App\Trait\TraitAmericano;
-use Laravel\Prompts\SelectPrompt;
+use App\Trait\TraitFrances;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
-use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Fieldset;
-use Illuminate\Container\Attributes\Auth;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
-use Icetalker\FilamentTableRepeater\Forms\Components\TableRepeater;
+use Filament\Schemas\Schema;
 
 class LoanForm
 {
-    use TraitFrances;
     use TraitAleman;
     use TraitAmericano;
+    use TraitFrances;
 
     public static function configure(Schema $schema): Schema
     {
@@ -75,7 +73,7 @@ class LoanForm
                             ->afterStateUpdated(function (Set $set, Get $get) {
                                 self::calculateAmortization($set, $get);
                             }),
-                        Select::make('amort method')
+                        Select::make('amort_method')
                             ->options(['FRANCES' => 'FRANCES', 'ALEMAN' => 'ALEMAN', 'AMERICANO' => 'AMERICANO'])
                             ->required()
                             ->native(false)
@@ -84,8 +82,17 @@ class LoanForm
                                 self::calculateAmortization($set, $get);
                             }),
                     ]),
-                TableRepeater::make('plans')
+                    
+                Repeater::make('plans')
+                    ->label('Cuadro de Marcha')
                     ->columns(5)
+                    ->table([
+                        TableColumn::make('FECHA'),
+                        TableColumn::make('CUOTA'),
+                        TableColumn::make('AMORTIZACION'),
+                        TableColumn::make('INTERESES'),
+                        TableColumn::make('PENDIENTE'),
+                    ])
                     ->schema([
                         TextInput::make('FECHA'),
                         TextInput::make('CUOTA'),
@@ -97,7 +104,7 @@ class LoanForm
                     ->deletable(false)
                     ->addable(false)
                     ->reorderable(false)
-                    ->columnSpanFull()
+                    ->columnSpanFull(),
                 // ->colStyles(function () {
                 //     return [
                 //         'FECHA' => 'background-color: #fafafa; width: 250px; font-weight: bold;',
@@ -110,6 +117,7 @@ class LoanForm
 
             ]);
     }
+
     /**
      * Calcula la tabla de amortizacion usando los traita existentes
      * */
@@ -122,8 +130,9 @@ class LoanForm
         $method = $get('amort_method');
 
         // Validar que todos los campos necesarios estén completos
-        if (!$amount || !$frecuencyId || !$rateId || !$years || !$method) {
+        if (! $amount || ! $frecuencyId || ! $rateId || ! $years || ! $method) {
             $set('plans', []);
+
             return;
         }
 
@@ -131,13 +140,14 @@ class LoanForm
         $frecuency = Frecuencie::find($frecuencyId);
         $rate = Rate::find($rateId);
 
-        if (!$frecuency || !$rate) {
+        if (! $frecuency || ! $rate) {
             $set('plans', []);
+
             return;
         }
 
         // Crear instancia para usar los traits
-        $calculator = new static();
+        $calculator = new static;
 
         try {
             // Llamar al método correspondiente según el tipo de amortización y frecuencia
@@ -164,6 +174,7 @@ class LoanForm
 
                 default:
                     $set('plans', []);
+
                     return;
             }
 
@@ -171,7 +182,7 @@ class LoanForm
             $plans = $tabla
                 ->filter(function ($item) {
                     // Excluir el elemento de resumen que tiene la clave 'RESUMEN'
-                    return !isset($item['RESUMEN']);
+                    return ! isset($item['RESUMEN']);
                 })
                 ->values()
                 ->toArray();
@@ -181,7 +192,7 @@ class LoanForm
         } catch (\Exception $e) {
             // En caso de error, limpiar la tabla
             $set('plans', []);
-            \Log::error('Error calculando amortización: ' . $e->getMessage());
+            \Log::error('Error calculando amortización: '.$e->getMessage());
         }
     }
 }

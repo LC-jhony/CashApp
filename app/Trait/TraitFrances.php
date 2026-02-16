@@ -7,8 +7,9 @@ use Carbon\Carbon;
 trait TraitFrances
 {
     private static $decimales = 2;
+
     // monto de pago
-    function PMT($interest, $num_of_payments, $pv, $fv = 0.00, $Type = 0)
+    public function PMT($interest, $num_of_payments, $pv, $fv = 0.00, $Type = 0)
     {
         $expo = pow((1 + $interest), $num_of_payments);
 
@@ -23,6 +24,7 @@ trait TraitFrances
         $periods = $years * 12;
 
         $pay = $this->PMT($interes, $periods, $monto);
+
         return $pay;
     }
 
@@ -33,9 +35,9 @@ trait TraitFrances
         $meses = $years * 12;
         $cuota = round($this->PayM($rate, $amount, $years), 2);
         $tabla = collect();
-        //dd($cuota);
+        // dd($cuota);
 
-        //variables dinámicas
+        // variables dinámicas
         $INTERESES = 0;
         $TINTERESES = 0;
         $AMORTIZACION = 0;
@@ -48,7 +50,10 @@ trait TraitFrances
             $TINTERESES += $INTERESES;
             $AMORTIZACION = round($cuota - $INTERESES, 2);
             $TAMORTIZACION += $AMORTIZACION;
-            $PENDIENTE -= $AMORTIZACION;
+            $PENDIENTE = round($PENDIENTE - $AMORTIZACION, 2);
+            if ($i === (int) $meses) {
+                $PENDIENTE = 0;
+            }
             $TCUOTAS += $cuota;
 
             $payDate = Carbon::now()->addMonth($i == 1 ? 1 : $i);
@@ -59,7 +64,7 @@ trait TraitFrances
                     'CUOTA' => $cuota,
                     'AMORTIZACION' => $AMORTIZACION,
                     'INTERESES' => $INTERESES,
-                    'PENDIENTE' => $PENDIENTE
+                    'PENDIENTE' => $PENDIENTE,
                 ]]);
             } else {
                 $tabla->push([
@@ -67,7 +72,7 @@ trait TraitFrances
                     'CUOTA' => $cuota,
                     'AMORTIZACION' => $AMORTIZACION,
                     'INTERESES' => $INTERESES,
-                    'PENDIENTE' => $PENDIENTE
+                    'PENDIENTE' => $PENDIENTE,
                 ]);
             }
         }
@@ -77,7 +82,7 @@ trait TraitFrances
             'TOTAL PAGADO' => $TCUOTAS,
             'AMORTIZACION' => $TAMORTIZACION,
             'INTERESES' => $TINTERESES,
-            'PENDIENTE' => $PENDIENTE
+            'PENDIENTE' => $PENDIENTE,
         ]);
 
         return $tabla;
@@ -90,6 +95,7 @@ trait TraitFrances
         $monto = $amount;
 
         $pay = $this->PMT($interes, $periods, $monto);
+
         return $pay;
     }
 
@@ -101,7 +107,7 @@ trait TraitFrances
         $cuota = round($this->PayB($rate, $amount, $years), 2);
         $tabla = collect();
 
-        //variables dinámicas
+        // variables dinámicas
         $INTERESES = 0;
         $TINTERESES = 0;
         $AMORTIZACION = 0;
@@ -114,7 +120,10 @@ trait TraitFrances
             $TINTERESES += $INTERESES;
             $AMORTIZACION = round($cuota - $INTERESES, 2);
             $TAMORTIZACION += $AMORTIZACION;
-            $PENDIENTE -= $AMORTIZACION;
+            $PENDIENTE = round($PENDIENTE - $AMORTIZACION, 2);
+            if ($i === (int) $meses) {
+                $PENDIENTE = 0;
+            }
             $TCUOTAS += $cuota;
             $PIVOTE += 2;
 
@@ -126,7 +135,7 @@ trait TraitFrances
                     'CUOTA' => $cuota,
                     'AMORTIZACION' => $AMORTIZACION,
                     'INTERESES' => $INTERESES,
-                    'PENDIENTE' => $PENDIENTE
+                    'PENDIENTE' => $PENDIENTE,
                 ]]);
             } else {
                 $tabla->push([
@@ -134,7 +143,7 @@ trait TraitFrances
                     'CUOTA' => $cuota,
                     'AMORTIZACION' => $AMORTIZACION,
                     'INTERESES' => $INTERESES,
-                    'PENDIENTE' => $PENDIENTE
+                    'PENDIENTE' => $PENDIENTE,
                 ]);
             }
         }
@@ -145,7 +154,7 @@ trait TraitFrances
             'TOTAL PAGADO' => $TCUOTAS,
             'AMORTIZACION' => $TAMORTIZACION,
             'INTERESES' => $TINTERESES,
-            'PENDIENTE' => $PENDIENTE
+            'PENDIENTE' => $PENDIENTE,
         ]);
 
         return $tabla;
@@ -158,6 +167,7 @@ trait TraitFrances
         $monto = $amount;
 
         $pay = $this->PMT($interes, $periods, $monto);
+
         return $pay;
     }
 
@@ -169,14 +179,14 @@ trait TraitFrances
         $cuota = round($this->PayT($rate, $amount, $years), 2);
         $tabla = collect();
 
-        //variables dinámicas
+        // variables dinámicas
         $INTERESES = 0;
         $TINTERESES = 0;
         $AMORTIZACION = 0;
         $TAMORTIZACION = 0;
         $TCUOTAS = 0;
         $PENDIENTE = $prestamo;
-        //$PIVOTE = 0;
+        // $PIVOTE = 0;
 
         $payDate = null;
         for ($i = 1; $i <= $meses; $i++) {
@@ -184,9 +194,11 @@ trait TraitFrances
             $TINTERESES += $INTERESES;
             $AMORTIZACION = round($cuota - $INTERESES, 2);
             $TAMORTIZACION += $AMORTIZACION;
-            $PENDIENTE -= $AMORTIZACION;
+            $PENDIENTE = round($PENDIENTE - $AMORTIZACION, 2);
+            if ($i === (int) $meses) {
+                $PENDIENTE = 0;
+            }
             $TCUOTAS += $cuota;
-
 
             if ($payDate == null) {
                 $payDate = Carbon::now()->addMonth(3);
@@ -200,7 +212,7 @@ trait TraitFrances
                     'CUOTA' => $cuota,
                     'AMORTIZACION' => $AMORTIZACION,
                     'INTERESES' => $INTERESES,
-                    'PENDIENTE' => $PENDIENTE
+                    'PENDIENTE' => $PENDIENTE,
                 ]]);
             } else {
                 $tabla->push([
@@ -208,7 +220,7 @@ trait TraitFrances
                     'CUOTA' => $cuota,
                     'AMORTIZACION' => $AMORTIZACION,
                     'INTERESES' => $INTERESES,
-                    'PENDIENTE' => $PENDIENTE
+                    'PENDIENTE' => $PENDIENTE,
                 ]);
             }
         }
@@ -219,7 +231,7 @@ trait TraitFrances
             'TOTAL PAGADO' => $TCUOTAS,
             'AMORTIZACION' => $TAMORTIZACION,
             'INTERESES' => $TINTERESES,
-            'PENDIENTE' => $PENDIENTE
+            'PENDIENTE' => $PENDIENTE,
         ]);
 
         return $tabla;
