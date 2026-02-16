@@ -33,7 +33,7 @@ class AdminPanelProvider extends PanelProvider
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Emerald,
             ])
             ->userMenu(position: UserMenuPosition::Sidebar)
             ->globalSearch(position: GlobalSearchPosition::Sidebar)

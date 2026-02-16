@@ -15,6 +15,8 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Filament\Support\Enums\Width;
+
 
 class LoanResource extends Resource
 {
@@ -23,6 +25,12 @@ class LoanResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'Loan';
+
+
+    public function getMaxContentWidth(): Width
+    {
+        return Width::ScreenExtraLarge; // or 'full', '7xl', etc.
+    }
 
     public static function form(Schema $schema): Schema
     {

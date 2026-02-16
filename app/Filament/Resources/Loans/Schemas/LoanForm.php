@@ -16,6 +16,7 @@ use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 
 class LoanForm
 {
@@ -31,10 +32,11 @@ class LoanForm
                     ->columnSpanFull()
                     ->columns([
                         'sm' => 2,
-                        'lg' => 5,
+                        'lg' => 6,
                     ])
                     ->schema([
                         TextInput::make('amount')
+                            ->label('Monto')
                             ->required()
                             ->numeric()
                             ->live()
@@ -42,6 +44,7 @@ class LoanForm
                                 self::calculateAmortization($set, $get);
                             }),
                         Select::make('frecuency_id')
+                            ->label('Frecuencia')
                             ->options(Frecuencie::all()->pluck('name', 'id'))
                             ->required()
                             ->native(false)
@@ -50,11 +53,17 @@ class LoanForm
                                 self::calculateAmortization($set, $get);
                             }),
                         Select::make('user_id')
+                            ->label('Usuario')
                             ->options(User::all()->pluck('name', 'id'))
                             ->default(auth()->id())
                             ->required()
                             ->native(false),
                         Select::make('rate_id')
+                            ->label('Tarifa')
+                            ->hint('%')
+                            ->hintColor('info')
+                            //->helperText('Texto de ayuda')
+                            //->hintIcon(Heroicon::PercentBadge)
                             ->options(Rate::all()->pluck('percent', 'id'))
                             ->required()
                             ->native(false)
@@ -69,11 +78,13 @@ class LoanForm
                             ->numeric()
                             ->default(1)
                             ->minValue(1)
+                            // ->extraInputAttributes(['style' => 'max-width: 10px'])
                             ->live()
                             ->afterStateUpdated(function (Set $set, Get $get) {
                                 self::calculateAmortization($set, $get);
                             }),
                         Select::make('amort_method')
+                            ->label('Amortización')
                             ->options(['FRANCES' => 'FRANCES', 'ALEMAN' => 'ALEMAN', 'AMERICANO' => 'AMERICANO'])
                             ->required()
                             ->native(false)
@@ -82,7 +93,7 @@ class LoanForm
                                 self::calculateAmortization($set, $get);
                             }),
                     ]),
-                    
+
                 Repeater::make('plans')
                     ->label('Cuadro de Marcha')
                     ->columns(5)
@@ -192,7 +203,7 @@ class LoanForm
         } catch (\Exception $e) {
             // En caso de error, limpiar la tabla
             $set('plans', []);
-            \Log::error('Error calculando amortización: '.$e->getMessage());
+            \Log::error('Error calculando amortización: ' . $e->getMessage());
         }
     }
 }
