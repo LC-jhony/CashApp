@@ -14,63 +14,43 @@ trait TraitAmericano
         $PRESTAMO = $amount;
         // NO HAY AMORTIZACION
 
-        //variables calculadas
-        $InteresCalculado = 0;
-        $CuotaPago = 0;
-        $CapitalVivo = 0;
+        $tabla = collect();
+        $CapitalVivo = $PRESTAMO;
         $SumaIntereses = 0;
         $SumaCuotas = 0;
-
-        $tabla = collect();
+        $SumaAmortizacion = 0;
 
         for ($i = 1; $i <= $CUOTAS; $i++) {
+            $InteresCalculado = round(($CapitalVivo * $TASA_MENSUAL) / 100, 2);
+            $Amortizacion = 0;
 
-            if ($i == 1) {
-                $CapitalVivo = $PRESTAMO;
-                $InteresCalculado = ($CapitalVivo * $TASA_MENSUAL) / 100;
+            if ($i < $CUOTAS) {
                 $CuotaPago = $InteresCalculado;
             } else {
-                $InteresCalculado = ($CapitalVivo * $TASA_MENSUAL) / 100;
-                if ($i < $CUOTAS) {
-                    // pago de 2 - 11
-                    $CuotaPago = $InteresCalculado;
-                } else {
-                    // último pago 12
-                    $CuotaPago = $InteresCalculado + $PRESTAMO;
-                    $CapitalVivo -= $PRESTAMO;
-                }
+                $Amortizacion = $PRESTAMO;
+                $CuotaPago = $InteresCalculado + $PRESTAMO;
+                $CapitalVivo -= $PRESTAMO;
             }
 
             $SumaIntereses += $InteresCalculado;
             $SumaCuotas += $CuotaPago;
+            $SumaAmortizacion += $Amortizacion;
 
-            // fecha pago para cada periodo
-            $payDate = Carbon::now()->addMonth($i == 1 ? 1 : $i + 1);
-
-            // agregar el item a la colección
-            if ($i == 1) {
-                $tabla = collect([[
-                    'FECHA' => $payDate->toDateString(),
-                    'CUOTA' => number_format($CuotaPago, 2),
-                    'INTERESES' => number_format($InteresCalculado, 2),
-                    'PENDIENTE' => number_format($CapitalVivo, 2),
-                ]]);
-            } else {
-                $tabla->push([
-                    'FECHA' => $payDate->toDateString(),
-                    'CUOTA' => number_format($CuotaPago, 2),
-                    'INTERESES' => number_format($InteresCalculado, 2),
-                    'PENDIENTE' => number_format($CapitalVivo, 2),
-                ]);
-            }
+            $tabla->push([
+                'FECHA' => Carbon::now()->addMonth($i)->toDateString(),
+                'CUOTA' => round($CuotaPago, 2),
+                'AMORTIZACION' => round($Amortizacion, 2),
+                'INTERESES' => $InteresCalculado,
+                'PENDIENTE' => round($CapitalVivo, 2),
+            ]);
         }
 
-        // RESUMEN DEL HISTORIAL
         $tabla->prepend([
-            'RESUMEN'  => '',
-            'TOTAL PAGADO' => number_format($SumaCuotas, 2),
-            'INTERESES' => number_format($SumaIntereses, 2),
-            'PENDIENTE' => number_format($CapitalVivo, 2),
+            'RESUMEN' => '',
+            'TOTAL PAGADO' => round($SumaCuotas, 2),
+            'AMORTIZACION' => round($SumaAmortizacion, 2),
+            'INTERESES' => round($SumaIntereses, 2),
+            'PENDIENTE' => round($CapitalVivo, 2),
         ]);
 
         return $tabla;

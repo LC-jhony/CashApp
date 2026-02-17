@@ -62,8 +62,8 @@ class LoanForm
                             ->label('Tarifa')
                             ->hint('%')
                             ->hintColor('info')
-                            //->helperText('Texto de ayuda')
-                            //->hintIcon(Heroicon::PercentBadge)
+                            // ->helperText('Texto de ayuda')
+                            // ->hintIcon(Heroicon::PercentBadge)
                             ->options(Rate::all()->pluck('percent', 'id'))
                             ->required()
                             ->native(false)
@@ -85,7 +85,11 @@ class LoanForm
                             }),
                         Select::make('amort_method')
                             ->label('Amortización')
-                            ->options(['FRANCES' => 'FRANCES', 'ALEMAN' => 'ALEMAN', 'AMERICANO' => 'AMERICANO'])
+                            ->options([
+                                'FRANCES' => 'FRANCES',
+                                'ALEMAN' => 'ALEMAN',
+                                'AMERICANO' => 'AMERICANO',
+                            ])
                             ->required()
                             ->native(false)
                             ->live()
@@ -116,6 +120,28 @@ class LoanForm
                     ->addable(false)
                     ->reorderable(false)
                     ->columnSpanFull(),
+
+                Fieldset::make('Totales')
+                    ->columnSpanFull()
+                    ->columns(4)
+                    ->schema([
+                        TextInput::make('total_pagado')
+                            ->label('Total Pagado')
+                            ->readonly()
+                            ->live(),
+                        TextInput::make('total_amortizacion')
+                            ->label('Total Amortización')
+                            ->readonly()
+                            ->live(),
+                        TextInput::make('total_intereses')
+                            ->label('Total Intereses')
+                            ->readonly()
+                            ->live(),
+                        TextInput::make('total_pendiente')
+                            ->label('Total Pendiente')
+                            ->readonly()
+                            ->live(),
+                    ]),
                 // ->colStyles(function () {
                 //     return [
                 //         'FECHA' => 'background-color: #fafafa; width: 250px; font-weight: bold;',
@@ -143,6 +169,10 @@ class LoanForm
         // Validar que todos los campos necesarios estén completos
         if (! $amount || ! $frecuencyId || ! $rateId || ! $years || ! $method) {
             $set('plans', []);
+            $set('total_pagado', null);
+            $set('total_amortizacion', null);
+            $set('total_intereses', null);
+            $set('total_pendiente', null);
 
             return;
         }
@@ -153,6 +183,10 @@ class LoanForm
 
         if (! $frecuency || ! $rate) {
             $set('plans', []);
+            $set('total_pagado', null);
+            $set('total_amortizacion', null);
+            $set('total_intereses', null);
+            $set('total_pendiente', null);
 
             return;
         }
@@ -185,25 +219,42 @@ class LoanForm
 
                 default:
                     $set('plans', []);
+                    $set('total_pagado', null);
+                    $set('total_amortizacion', null);
+                    $set('total_intereses', null);
+                    $set('total_pendiente', null);
 
                     return;
             }
 
-            // Filtrar el resumen (primer elemento) y convertir a array
+            // Extraer el resumen (primer elemento) y los planes
+            $summary = $tabla->firstWhere('RESUMEN', '');
             $plans = $tabla
-                ->filter(function ($item) {
-                    // Excluir el elemento de resumen que tiene la clave 'RESUMEN'
-                    return ! isset($item['RESUMEN']);
-                })
+                ->filter(fn ($item) => ! isset($item['RESUMEN']))
+                ->map(fn ($item) => [
+                    'FECHA' => $item['FECHA'],
+                    'CUOTA' => number_format($item['CUOTA'], 2, '.', ''),
+                    'AMORTIZACION' => number_format($item['AMORTIZACION'], 2, '.', ''),
+                    'INTERESES' => number_format($item['INTERESES'], 2, '.', ''),
+                    'PENDIENTE' => number_format($item['PENDIENTE'], 2, '.', ''),
+                ])
                 ->values()
                 ->toArray();
 
-            // Actualizar el TableRepeater con los planes calculados
+            // Actualizar el Repeater con los planes calculados
             $set('plans', $plans);
+
+            // Actualizar los campos de totales
+            if ($summary) {
+                $set('total_pagado', number_format($summary['TOTAL PAGADO'] ?? 0, 2, '.', ''));
+                $set('total_amortizacion', number_format($summary['AMORTIZACION'] ?? 0, 2, '.', ''));
+                $set('total_intereses', number_format($summary['INTERESES'] ?? 0, 2, '.', ''));
+                $set('total_pendiente', number_format($summary['PENDIENTE'] ?? 0, 2, '.', ''));
+            }
         } catch (\Exception $e) {
             // En caso de error, limpiar la tabla
             $set('plans', []);
-            \Log::error('Error calculando amortización: ' . $e->getMessage());
+            \Log::error('Error calculando amortización: '.$e->getMessage());
         }
     }
 }
