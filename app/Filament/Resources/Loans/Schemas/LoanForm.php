@@ -200,21 +200,36 @@ class LoanForm
 
             switch ($method) {
                 case 'FRANCES':
-                    // Determinar el método según la frecuencia
                     $tabla = match (strtoupper($frecuency->name)) {
                         'MENSUAL' => $calculator->PlanMensual($rate->percent, $amount, $years),
                         'BIMESTRAL' => $calculator->PlanBimestral($rate->percent, $amount, $years),
                         'TRIMESTRAL' => $calculator->PlanTrimestral($rate->percent, $amount, $years),
+                        'SEMESTRAL' => $calculator->PlanSemestral($rate->percent, $amount, $years),
+                        'ANUAL' => $calculator->PlanAnual($rate->percent, $amount, $years),
                         default => $calculator->PlanMensual($rate->percent, $amount, $years),
                     };
                     break;
 
                 case 'ALEMAN':
-                    $tabla = $calculator->PlanMensualAleman($rate->percent, $amount, $years);
+                    $tabla = match (strtoupper($frecuency->name)) {
+                        'MENSUAL' => $calculator->PlanMensualAleman($rate->percent, $amount, $years),
+                        'BIMESTRAL' => $calculator->PlanBimestralAleman($rate->percent, $amount, $years),
+                        'TRIMESTRAL' => $calculator->PlanTrimestralAleman($rate->percent, $amount, $years),
+                        'SEMESTRAL' => $calculator->PlanSemestralAleman($rate->percent, $amount, $years),
+                        'ANUAL' => $calculator->PlanAnualAleman($rate->percent, $amount, $years),
+                        default => $calculator->PlanMensualAleman($rate->percent, $amount, $years),
+                    };
                     break;
 
                 case 'AMERICANO':
-                    $tabla = $calculator->PlanMensualAmericano($rate->percent, $amount, $years);
+                    $tabla = match (strtoupper($frecuency->name)) {
+                        'MENSUAL' => $calculator->PlanMensualAmericano($rate->percent, $amount, $years),
+                        'BIMESTRAL' => $calculator->PlanBimestralAmericano($rate->percent, $amount, $years),
+                        'TRIMESTRAL' => $calculator->PlanTrimestralAmericano($rate->percent, $amount, $years),
+                        'SEMESTRAL' => $calculator->PlanSemestralAmericano($rate->percent, $amount, $years),
+                        'ANUAL' => $calculator->PlanAnualAmericano($rate->percent, $amount, $years),
+                        default => $calculator->PlanMensualAmericano($rate->percent, $amount, $years),
+                    };
                     break;
 
                 default:
