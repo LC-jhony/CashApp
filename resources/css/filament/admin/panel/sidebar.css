@@ -1,0 +1,38 @@
+.fi-sidebar-item .fi-sidebar-item-btn {
+    @apply rounded-xl px-4;
+}
+
+.fi-sidebar-item.fi-active .fi-sidebar-item-btn {
+    @apply bg-primary-100/80 dark:bg-gray-800/10;
+}
+
+.fi-sidebar-item:not(.fi-active) .fi-sidebar-item-btn:hover .fi-sidebar-item-label,
+.fi-sidebar-item:not(.fi-active) .fi-sidebar-item-btn:hover .fi-sidebar-item-icon {
+    @apply text-indigo-600 dark:text-indigo-400;
+}
+
+.fi-sidebar-item.fi-active .fi-sidebar-item-label,
+.fi-sidebar-item.fi-active .fi-sidebar-item-icon {
+    @apply text-primary-600 dark:text-primary-400;
+}
+
+.fi-sidebar-item.fi-active .fi-sidebar-item-badge-ctn .fi-badge {
+    @apply bg-white text-primary-600 dark:bg-primary-900/75 dark:text-white;
+}
+
+/*
+* revisar los estilos 
+*/
+.fi-sidebar-item.fi-active .fi-sidebar-item-grouped-border .fi-sidebar-item-grouped-border-part {
+    @apply bg-gray-900/75 dark:bg-white/75;
+}
+
+.fi-sidebar-item.fi-active .fi-sidebar-item-grouped-border .fi-sidebar-item-grouped-border-part-not-last,
+.fi-sidebar-item.fi-active .fi-sidebar-item-grouped-border .fi-sidebar-item-grouped-border-part-not-first {
+    @apply bg-gray-900/25 dark:bg-white/25;
+}
+
+/* TODO: Implement this */
+.fi-sidebar-group-dropdown-trigger-btn {
+    @apply rounded-3xl;
+}

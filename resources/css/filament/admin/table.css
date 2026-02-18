@@ -1,0 +1,27 @@
+.fi-ta-ctn {
+    @apply rounded-xl;
+}
+
+.fi-ta-header,
+.fi-ta-footer {
+    @apply divide-y divide-gray-200 dark:divide-white/10 min-h-12;
+}
+
+.fi-ta-row td:first-child {
+    padding-left: 3rem;
+}
+
+.fi-ta-row td:nth-child(2),
+.fi-ta-row td:nth-child(3) {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+}
+
+.fi-ta-row td:nth-child(4) {
+    white-space: nowrap;
+}
+
+.fi-ta-row td:last-child {
+    padding-right: 3rem;
+}

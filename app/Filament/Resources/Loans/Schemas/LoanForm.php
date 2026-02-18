@@ -32,7 +32,7 @@ class LoanForm
                     ->columnSpanFull()
                     ->columns([
                         'sm' => 2,
-                        'lg' => 6,
+                        'lg' => 5,
                     ])
                     ->schema([
                         TextInput::make('amount')
@@ -52,12 +52,12 @@ class LoanForm
                             ->afterStateUpdated(function (Set $set, Get $get) {
                                 self::calculateAmortization($set, $get);
                             }),
-                        Select::make('user_id')
-                            ->label('Usuario')
-                            ->options(User::all()->pluck('name', 'id'))
-                            ->default(auth()->id())
-                            ->required()
-                            ->native(false),
+                        // Select::make('user_id')
+                        //     ->label('Usuario')
+                        //     ->options(User::all()->pluck('name', 'id'))
+                        //     ->default(auth()->id())
+                        //     ->required()
+                        //     ->native(false),
                         Select::make('rate_id')
                             ->label('Tarifa')
                             ->hint('%')

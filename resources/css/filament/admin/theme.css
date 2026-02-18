@@ -1,9 +1,16 @@
+@import 'tailwindcss';
 @import '../../../../vendor/filament/filament/resources/css/theme.css';
+@import './panel/sidebar.css';
+@import './panel/layout.css';
+@import './panel/search.css';
+@import './panel/theme-switcher.css';
+@import './panel/topbar.css';
+@import './table.css';
+@import './form.css';
 
 @source '../../../../vendor/diogogpinto/filament-auth-ui-enhancer/resources/**/*.blade.php';
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
-@source '../../../../vendor/bezhansalleh/filament-panel-switch/resources/views/**/*.blade.php';
 
 .fi-topbar {
     @apply !bg-inherit ring-0 shadow-none;
