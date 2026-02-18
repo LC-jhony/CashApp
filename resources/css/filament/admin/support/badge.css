@@ -1,0 +1,24 @@
+.fi-badge {
+    @apply inline-flex items-center rounded-lg px-2 py-1 text-xs font-medium;
+}
+
+/* 
+.fi-badge:not(.fi-color) {
+    @apply bg-gray-400/10 text-gray-400;
+}
+
+.fi-badge.fi-color-primary {
+    @apply bg-primary-400/10 text-primary-600;
+}
+
+.fi-badge.fi-color:not(.fi-color-primary) {
+    @apply bg-custom-400/10 !text-gray-900/60;
+}
+
+.fi-badge.fi-color:not(.fi-color-primary) .fi-icon {
+    @apply text-gray-400/10;
+}
+
+.fi-icon-btn-badge-ctn {
+    @apply -ml-1.5 mt-0.5 bg-transparent;
+} */
