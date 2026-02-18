@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Plan extends Model
 {
@@ -15,4 +16,12 @@ class Plan extends Model
         'amort',
         'balance',
     ];
+
+    public function loan(): BelongsTo
+    {
+        return $this->belongsTo(
+            related: Loan::class,
+            foreignKey: 'loan_id',
+        );
+    }
 }

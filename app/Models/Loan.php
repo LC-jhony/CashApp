@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Plan;
-use App\Models\Rate;
 use Illuminate\Database\Eloquent\Model;
 
 class Loan extends Model
@@ -12,18 +10,26 @@ class Loan extends Model
         'amount',
         'frecuency_id',
         'user_id',
-        //   'customer_id',
+        'customer_id',
         'rate_id',
+        'years',
+        'amort_method',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function plan()
     {
         return $this->hasMany(Plan::class);
     }
 
-    // public function customer()
-    // {
-    //     return $this->belongsTo(Customer::class);
-    // }
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
 
     public function rate()
     {

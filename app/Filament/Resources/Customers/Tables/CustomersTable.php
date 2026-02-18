@@ -1,41 +1,40 @@
 <?php
 
-namespace App\Filament\Resources\Loans\Tables;
+namespace App\Filament\Resources\Customers\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-class LoansTable
+class CustomersTable
 {
     public static function configure(Table $table): Table
     {
         return $table
-            ->striped()
-            ->paginated([5, 10, 25, 50, 100, 'all'])
-            ->defaultPaginationPageOption(5)
-            ->searchable()
             ->columns([
-                TextColumn::make('amount')
-                    ->label('Monto del Préstamo')
+                TextColumn::make('name')
+                    ->searchable(),
+                TextColumn::make('email')
+                    ->label('Email address')
+                    ->searchable(),
+                TextColumn::make('phone')
+                    ->searchable(),
+                // TextColumn::make('address')
+                //     ->searchable(),
+                TextColumn::make('salary')
                     ->numeric()
-                    ->sortable()
-                    ->alignCenter(),
-                TextColumn::make('frecuency.name')
-                    ->label('Frecuencia')
                     ->sortable(),
-                TextColumn::make('user.name')
-                    ->label('Usuario')
-                    ->sortable(),
-                TextColumn::make('rate.percent')
-                    ->label('Tasa de Interés')
-                    ->suffix(' % ')
+                TextColumn::make('age')
                     ->numeric()
-                    ->sortable()
-                    ->alignCenter(),
+                    ->sortable(),
+                TextColumn::make('gender')
+                    ->badge(),
+                // TextColumn::make('avatar')
+                //     ->searchable(),
+                TextColumn::make('identification')
+                    ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -49,7 +48,6 @@ class LoansTable
                 //
             ])
             ->recordActions([
-                ViewAction::make(),
                 EditAction::make(),
             ])
             ->toolbarActions([

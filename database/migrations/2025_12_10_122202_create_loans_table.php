@@ -16,12 +16,10 @@ return new class extends Migration
             $table->decimal('amount');
             $table->unsignedBigInteger('frecuency_id');
             $table->unsignedBigInteger('user_id');
-            //$table->unsignedBigInteger('customer_id');
             $table->unsignedBigInteger('rate_id');
             $table->timestamps();
             $table->foreign('frecuency_id')->references('id')->on('frecuencies');
             $table->foreign('user_id')->references('id')->on('users');
-            //$table->foreign('customer_id')->references('id')->on('customers');
             $table->foreign('rate_id')->references('id')->on('rates');
         });
     }

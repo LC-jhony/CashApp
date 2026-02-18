@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Loans\Schemas;
 
+use App\Models\Customer;
 use App\Models\Frecuencie;
 use App\Models\Rate;
 use App\Models\User;
@@ -16,7 +17,7 @@ use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Log;
 
 class LoanForm
 {
@@ -28,6 +29,25 @@ class LoanForm
     {
         return $schema
             ->components([
+                Fieldset::make('Borrower Information')
+                    ->columnSpanFull()
+                    ->columns([
+                        'sm' => 2,
+                        'lg' => 2,
+                    ])
+                    ->schema([
+                        Select::make('customer_id')
+                            ->label('Nombre del Solicitante')
+                            ->options(Customer::all()->pluck('name', 'id'))
+                            ->searchable()
+                            ->required(),
+                        Select::make('user_id')
+                            ->label('Usuario')
+                            ->options(User::all()->pluck('name', 'id'))
+                            ->default(auth()->id())
+                            ->required()
+                            ->native(false),
+                    ]),
                 Fieldset::make('Loan Details')
                     ->columnSpanFull()
                     ->columns([
@@ -52,12 +72,7 @@ class LoanForm
                             ->afterStateUpdated(function (Set $set, Get $get) {
                                 self::calculateAmortization($set, $get);
                             }),
-                        // Select::make('user_id')
-                        //     ->label('Usuario')
-                        //     ->options(User::all()->pluck('name', 'id'))
-                        //     ->default(auth()->id())
-                        //     ->required()
-                        //     ->native(false),
+
                         Select::make('rate_id')
                             ->label('Tarifa')
                             ->hint('%')
@@ -102,23 +117,25 @@ class LoanForm
                     ->label('Cuadro de Marcha')
                     ->columns(5)
                     ->table([
-                        TableColumn::make('FECHA'),
-                        TableColumn::make('CUOTA'),
-                        TableColumn::make('AMORTIZACION'),
-                        TableColumn::make('INTERESES'),
-                        TableColumn::make('PENDIENTE'),
+                        TableColumn::make('Fecha'),
+                        TableColumn::make('Cuota'),
+                        TableColumn::make('Amortización'),
+                        TableColumn::make('Intereses'),
+                        TableColumn::make('Pendiente'),
                     ])
                     ->schema([
-                        TextInput::make('FECHA'),
-                        TextInput::make('CUOTA'),
-                        TextInput::make('AMORTIZACION'),
-                        TextInput::make('INTERESES'),
-                        TextInput::make('PENDIENTE'),
+                        TextInput::make('date')->label('Fecha')->readonly(),
+                        TextInput::make('number')->hidden(),
+                        TextInput::make('payment')->label('Cuota')->readonly(),
+                        TextInput::make('amort')->label('Amortización')->readonly(),
+                        TextInput::make('interest')->label('Intereses')->readonly(),
+                        TextInput::make('balance')->label('Pendiente')->readonly(),
                     ])
                     ->defaultItems(0)
                     ->deletable(false)
                     ->addable(false)
                     ->reorderable(false)
+                    ->disabled()
                     ->columnSpanFull(),
 
                 Fieldset::make('Totales')
@@ -246,12 +263,13 @@ class LoanForm
             $summary = $tabla->firstWhere('RESUMEN', '');
             $plans = $tabla
                 ->filter(fn ($item) => ! isset($item['RESUMEN']))
-                ->map(fn ($item) => [
-                    'FECHA' => $item['FECHA'],
-                    'CUOTA' => number_format($item['CUOTA'], 2, '.', ''),
-                    'AMORTIZACION' => number_format($item['AMORTIZACION'], 2, '.', ''),
-                    'INTERESES' => number_format($item['INTERESES'], 2, '.', ''),
-                    'PENDIENTE' => number_format($item['PENDIENTE'], 2, '.', ''),
+                ->map(fn ($item, $index) => [
+                    'date' => $item['FECHA'],
+                    'number' => $index + 1,
+                    'payment' => number_format($item['CUOTA'], 2, '.', ''),
+                    'amort' => number_format($item['AMORTIZACION'], 2, '.', ''),
+                    'interest' => number_format($item['INTERESES'], 2, '.', ''),
+                    'balance' => number_format($item['PENDIENTE'], 2, '.', ''),
                 ])
                 ->values()
                 ->toArray();
@@ -267,9 +285,8 @@ class LoanForm
                 $set('total_pendiente', number_format($summary['PENDIENTE'] ?? 0, 2, '.', ''));
             }
         } catch (\Exception $e) {
-            // En caso de error, limpiar la tabla
             $set('plans', []);
-            \Log::error('Error calculando amortización: '.$e->getMessage());
+            Log::error('Error calculando amortización: '.$e->getMessage());
         }
     }
 }

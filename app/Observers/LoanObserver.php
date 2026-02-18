@@ -1,77 +1,77 @@
 <?php
 
-namespace App\Filament\Resources\Loans\Pages;
+namespace App\Observers;
 
-use App\Filament\Resources\Loans\LoanResource;
 use App\Models\Frecuencie;
+use App\Models\Loan;
+use App\Models\Plan;
 use App\Models\Rate;
 use App\Trait\TraitAleman;
 use App\Trait\TraitAmericano;
 use App\Trait\TraitFrances;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\ViewAction;
-use Filament\Resources\Pages\EditRecord;
 
-class EditLoan extends EditRecord
+class LoanObserver
 {
     use TraitAleman;
     use TraitAmericano;
     use TraitFrances;
 
-    protected static string $resource = LoanResource::class;
-
-    protected function getHeaderActions(): array
+    public function created(Loan $loan): void
     {
-        return [
-            ViewAction::make(),
-            DeleteAction::make(),
-        ];
+        $this->generatePlans($loan);
     }
 
-    protected function mutateFormDataBeforeFill(array $data): array
+    public function updated(Loan $loan): void
     {
-        $frecuency = Frecuencie::find($data['frecuency_id'] ?? null);
-        $rate = Rate::find($data['rate_id'] ?? null);
+        if ($loan->isDirty(['amount', 'frecuency_id', 'rate_id', 'years', 'amort_method'])) {
+            $loan->plan()->delete();
+            $this->generatePlans($loan);
+        }
+    }
+
+    public function deleted(Loan $loan): void
+    {
+        $loan->plan()->delete();
+    }
+
+    protected function generatePlans(Loan $loan): void
+    {
+        $frecuency = Frecuencie::find($loan->frecuency_id);
+        $rate = Rate::find($loan->rate_id);
 
         if (! $frecuency || ! $rate) {
-            return $data;
+            return;
         }
 
         $tabla = $this->calculateAmortizationTable(
-            $data['amort_method'] ?? '',
+            $loan->amort_method,
             $frecuency->name,
             $rate->percent,
-            $data['amount'] ?? 0,
-            $data['years'] ?? 1
+            $loan->amount,
+            $loan->years
         );
 
         if ($tabla->isEmpty()) {
-            return $data;
+            return;
         }
 
-        $summary = $tabla->firstWhere('RESUMEN', '');
-
-        $data['plans'] = $tabla
+        $plans = $tabla
             ->filter(fn ($item) => ! isset($item['RESUMEN']))
+            ->values()
             ->map(fn ($item, $index) => [
+                'loan_id' => $loan->id,
                 'date' => $item['FECHA'],
                 'number' => $index + 1,
-                'payment' => number_format($item['CUOTA'], 2, '.', ''),
-                'amort' => number_format($item['AMORTIZACION'], 2, '.', ''),
-                'interest' => number_format($item['INTERESES'], 2, '.', ''),
-                'balance' => number_format($item['PENDIENTE'], 2, '.', ''),
+                'payment' => $item['CUOTA'],
+                'interest' => $item['INTERESES'],
+                'amort' => $item['AMORTIZACION'],
+                'balance' => $item['PENDIENTE'],
+                'created_at' => now(),
+                'updated_at' => now(),
             ])
-            ->values()
             ->toArray();
 
-        if ($summary) {
-            $data['total_pagado'] = number_format($summary['TOTAL PAGADO'] ?? 0, 2, '.', '');
-            $data['total_amortizacion'] = number_format($summary['AMORTIZACION'] ?? 0, 2, '.', '');
-            $data['total_intereses'] = number_format($summary['INTERESES'] ?? 0, 2, '.', '');
-            $data['total_pendiente'] = number_format($summary['PENDIENTE'] ?? 0, 2, '.', '');
-        }
-
-        return $data;
+        Plan::insert($plans);
     }
 
     protected function calculateAmortizationTable(string $method, string $frecuencyName, float $ratePercent, float $amount, int $years)

@@ -15,7 +15,7 @@ class PlansTable
     {
         return $table
             ->columns([
-                TextColumn::make('loan_id')
+                TextColumn::make('loan.amort_method')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('date')
