@@ -15,6 +15,7 @@ class Plan extends Model
         'interest',
         'amort',
         'balance',
+        'status',
     ];
 
     public function loan(): BelongsTo

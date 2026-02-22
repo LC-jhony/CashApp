@@ -12,15 +12,18 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Filament\Support\Colors\Color;
+// use Filament\Support\Facades\FilamentColor;
+use Filament\Support\Colors\Color as FilamentColor;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
+use FinityLabs\FinAvatar\AvatarProviders\UiAvatarsProvider;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Openplain\FilamentShadcnTheme\Color;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -29,11 +32,16 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('admin')
+            ->defaultAvatarProvider(UiAvatarsProvider::class)
             ->path('/')
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
             ->colors([
-                'primary' => Color::Indigo,
+                'primary' => Color::Default,
+                // adaptive(
+                //     lightColor: FilamentColor::Default,
+                //     darkColor: FilamentColor::Blue,
+                // ),
             ])
             ->topbar(false)
             ->userMenu(position: UserMenuPosition::Sidebar)
