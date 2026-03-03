@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Users\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Schema;
 
 class UserForm
@@ -21,7 +22,31 @@ class UserForm
                 DateTimePicker::make('email_verified_at'),
                 TextInput::make('password')
                     ->password()
-                    ->required(),
+                    ->revealable()
+                    ->dehydrated(fn($state): bool => filled($state))
+                    ->required(fn(string $operation): bool => $operation === 'create')
+                    ->visible(fn(string $operation): bool => $operation === 'create'),
+                TextInput::make('password_confirmation')
+                    ->password()
+                    ->revealable()
+                    ->dehydrated(false)
+                    ->required(fn(string $operation): bool => $operation === 'create')
+                    ->same('password')
+                    ->visible(fn(string $operation): bool => $operation === 'create'),
+                Fieldset::make('Contraseña')
+                    ->columnSpanFull()
+                    ->schema([
+                        TextInput::make('password')
+                            ->password()
+                            ->revealable()
+                            ->dehydrated(fn($state): bool => filled($state)),
+                        TextInput::make('password_confirmation')
+                            ->password()
+                            ->revealable()
+                            ->dehydrated(false)
+                            ->same('password'),
+                    ])
+                    ->visible(fn(string $operation): bool => $operation === 'edit'),
             ]);
     }
 }
